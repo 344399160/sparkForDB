@@ -17,17 +17,23 @@ import java.util.Map;
  */
 public class HCatToMap implements PairFunction<Tuple2<WritableComparable, SerializableWritable<HCatRecord>>, String,  Map<String, String>> {
     private HCatSchema hCatSchema;
+    private String keyLabelName;
 
-    public HCatToMap(HCatSchema hCatSchema){
+    public HCatToMap(HCatSchema hCatSchema, String keyLabelName){
         this.hCatSchema = hCatSchema;
+        this.keyLabelName = keyLabelName;
     }
     public Tuple2<String,  Map<String, String>> call(Tuple2<WritableComparable, SerializableWritable<HCatRecord>> tuple2) throws Exception {
         Map<String, String> map = new HashMap<String, String>();
         HCatRecord record = tuple2._2().value();
         List<String> fieldName = hCatSchema.getFieldNames();
+        String rowKey = "";
         for (int i = 0; i < fieldName.size(); i++) {
+            if (fieldName.get(i).equals(keyLabelName)) {
+                rowKey = record.get(fieldName.get(i),hCatSchema).toString();
+            }
             map.put(fieldName.get(i), record.get(fieldName.get(i),hCatSchema).toString());
         }
-        return new Tuple2<String,  Map<String, String>>(null, map);
+        return new Tuple2<String,  Map<String, String>>(rowKey, map);
     }
 }

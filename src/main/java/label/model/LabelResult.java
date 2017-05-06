@@ -1,6 +1,6 @@
 package label.model;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * 描述：数据集
@@ -8,36 +8,36 @@ import java.util.Map;
  */
 public class LabelResult {
 
-    //时间戳
-    private long timestamp;
+    //数据源区分 （ES, HBASE）
+    private String source;
+
+    //HBASE分页查询起始rowkey
+    private String startRow;
 
     //数据集
-    private Map<String, Object> rowData;
+    private List<Entity> entityList;
 
-    //唯一主键
-    private String rowKey;
-
-    public Map<String, Object> getRowData() {
-        return rowData;
+    public List<Entity> getEntityList() {
+        return entityList;
     }
 
-    public void setRowData(Map<String, Object> rowData) {
-        this.rowData = rowData;
+    public void setEntityList(List<Entity> entityList) {
+        this.entityList = entityList;
     }
 
-    public String getRowKey() {
-        return rowKey;
+    public String getSource() {
+        return source;
     }
 
-    public void setRowKey(String rowKey) {
-        this.rowKey = rowKey;
+    public void setSource(String source) {
+        this.source = source;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public String getStartRow() {
+        return startRow;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setStartRow(String startRow) {
+        this.startRow = startRow;
     }
 }

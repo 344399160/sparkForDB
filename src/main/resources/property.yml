@@ -1,0 +1,21 @@
+#
+#	es 配置
+#
+cluster.name: es
+
+es.index.auto.create: true
+
+es.nodes: 172.16.2.3
+
+es.port: 9200
+
+es.transport.port: 9300
+
+#
+#   hbase 配置
+#
+hbase.zookeeper.property.clientPort: 2181
+
+hbase.rootdir: hdfs://172.16.9.41:8020/hbase
+
+hbase.zookeeper.quorum: T41,T42,T43

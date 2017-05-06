@@ -1,8 +1,11 @@
 package label.elasticsearch;
 
+import label.combine.SearchConstructor;
 import label.common.MessageException;
+import label.model.LabelResult;
 import label.utils.ConstUtil;
-import org.apache.commons.collections.map.HashedMap;
+import label.utils.ResultFormatter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.admin.indices.close.CloseIndexResponse;
@@ -14,7 +17,6 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.stats.IndicesStatsResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetItemResponse;
 import org.elasticsearch.action.get.MultiGetRequestBuilder;
@@ -28,7 +30,6 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -46,7 +47,7 @@ import java.util.*;
  * 描述：ES检索
  * author qiaobin   2017/3/6 14:20.
  */
-public class ESService {
+public class ESClient {
 
     private final static int MAX = 100;
 
@@ -60,7 +61,7 @@ public class ESService {
      * @param ip 地址
      * @param port 端口
      */
-    public ESService(String clusterName, String ip, int port) {
+    public ESClient(String clusterName, String ip, int port) {
         try {
             Settings settings = Settings.builder()
                     .put("cluster.name", clusterName).build();
@@ -241,9 +242,7 @@ public class ESService {
      * @param type 类型
      * @param constructor 查询构造
      */
-    public List<Map<String, Object>> search(String index, ESQueryConstructor constructor, String ... type) {
-        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-        String[] a = {};
+    public LabelResult search(String index, ESQueryConstructor constructor, String ... type) {
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type);
         //排序
         if (StringUtils.isNotEmpty(constructor.getAsc()))
@@ -268,14 +267,76 @@ public class ESService {
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
 
         SearchHits hits = searchResponse.getHits();
-        SearchHit[] searchHists = hits.getHits();
-        for (SearchHit sh : searchHists) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("_id", sh.getId());
-            map.putAll(sh.getSource());
-            result.add(map);
+
+        return ResultFormatter.formatRecord(hits);
+    }
+
+    /**
+     * 功能描述：查询
+     * @param index 索引名
+     * @param type 类型
+     * @param constructor 查询构造
+     */
+    public LabelResult search(String index, SearchConstructor constructor, String ... type) {
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type);
+        //设置查询体
+        if (null != constructor.listBuilders()) {
+            searchRequestBuilder.setQuery(constructor.listBuilders());
         }
-        return result;
+        //返回条目数
+        int size = constructor.getSize();
+        if (size < 0) {
+            size = 0;
+        }
+        if (size > MAX) {
+            size = MAX;
+        }
+        //返回条目数
+        searchRequestBuilder.setSize(size);
+
+        searchRequestBuilder.setFrom(constructor.getFrom() < 0 ? 0 : constructor.getFrom());
+
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+
+        SearchHits hits = searchResponse.getHits();
+
+        return ResultFormatter.formatRecord(hits);
+    }
+
+    /**
+     * 功能描述：查询符合条件总数
+     * @param index 索引名
+     * @param type 类型
+     * @param constructor 查询构造
+     */
+    public long count(String index, ESQueryConstructor constructor, String ... type) {
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type);
+        //排序
+        if (StringUtils.isNotEmpty(constructor.getAsc()))
+            searchRequestBuilder.addSort(constructor.getAsc(), SortOrder.ASC);
+        if (StringUtils.isNotEmpty(constructor.getDesc()))
+            searchRequestBuilder.addSort(constructor.getDesc(), SortOrder.DESC);
+        //设置查询体
+        if (null != constructor.listBuilders()) {
+            searchRequestBuilder.setQuery(constructor.listBuilders());
+        }
+        //返回条目数
+        int size = constructor.getSize();
+        if (size < 0) {
+            size = 0;
+        }
+        if (size > MAX) {
+            size = MAX;
+        }
+        //返回条目数
+        searchRequestBuilder.setSize(size);
+
+        searchRequestBuilder.setFrom(constructor.getFrom() < 0 ? 0 : constructor.getFrom());
+
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+
+        SearchHits hits = searchResponse.getHits();
+        return hits.getTotalHits();
     }
 
     /**
@@ -285,8 +346,7 @@ public class ESService {
      * @param constructor 查询构造
      * @param statBy 统计字段
      */
-    public Map<Object, Object> statSearch(ESQueryConstructor constructor, String statBy, String index, String... type) {
-        Map<Object, Object> map = new HashedMap();
+    public Map<String, Object> statSearch(ESQueryConstructor constructor, String statBy, String index, String... type) {
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type);
         //设置查询体
         if (null != constructor) {
@@ -310,14 +370,7 @@ public class ESService {
         ).get();
 
         Terms stateAgg = sr.getAggregations().get("agg");
-        Iterator<Terms.Bucket> iter = stateAgg.getBuckets().iterator();
-
-        while (iter.hasNext()) {
-            Terms.Bucket gradeBucket = iter.next();
-            map.put(gradeBucket.getKey(), gradeBucket.getDocCount());
-        }
-
-        return map;
+        return ResultFormatter.formatRecord(stateAgg);
     }
 
     /**
@@ -327,11 +380,10 @@ public class ESService {
      * @param constructor 查询构造
      * @param agg 自定义计算
      */
-    public Map<Object, Object> statSearch(ESQueryConstructor constructor, AggregationBuilder agg, String index, String type) {
+    public Map<String, Object> statSearch(ESQueryConstructor constructor, AggregationBuilder agg, String index, String type) {
         if (agg == null) {
             return null;
         }
-        Map<Object, Object> map = new HashedMap();
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type);
         //设置查询体
         if (null != constructor) {
@@ -349,13 +401,8 @@ public class ESService {
         SearchResponse sr = searchRequestBuilder.addAggregation(agg).get();
 
         Terms stateAgg = sr.getAggregations().get("agg");
-        Iterator<Terms.Bucket> iter = stateAgg.getBuckets().iterator();
 
-        while (iter.hasNext()) {
-            Terms.Bucket gradeBucket = iter.next();
-            map.put(gradeBucket.getKey(), gradeBucket.getDocCount());
-        }
-        return map;
+        return ResultFormatter.formatRecord(stateAgg);
     }
 
     /**
@@ -367,7 +414,7 @@ public class ESService {
      * @param endTime 结束时间
      */
     public List<String> getTypes(String index, long beforeTime, long endTime) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             Object[] keys = getTypes(index);
             SimpleDateFormat sdf = new SimpleDateFormat(SIMPLE_FORMATTER);
@@ -491,7 +538,7 @@ public class ESService {
      * @param index
      * @param type
      */
-    public long getTotalCount(String index, String type) {
+    public long getTotalCount(String index, String... type) {
         SearchResponse sp = client.prepareSearch(index).setTypes(type).setSize(0).execute().actionGet();
         return sp.getHits().getTotalHits();
     }

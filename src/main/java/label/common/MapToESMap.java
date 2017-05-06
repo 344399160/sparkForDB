@@ -1,5 +1,6 @@
 package label.common;
 
+import label.utils.ConstUtil;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
@@ -21,8 +22,8 @@ public class MapToESMap implements PairFunction<Tuple2<String, Map<String, Strin
     public Tuple2<String, Map<String, String>> call(Tuple2<String, Map<String, String>> tuple2) throws Exception {
         String rowKey = tuple2._1;
         Map<String, String> map = tuple2._2();
-        map.put("rowKey", rowKey);
-        map.put("version", String.valueOf(timestamp));
+        map.put(ConstUtil.ROWKEY, rowKey);
+        map.put(ConstUtil.VERSION, String.valueOf(timestamp));
         return new Tuple2<String, Map<String, String>>(null, map);
     }
 }

@@ -12,7 +12,7 @@ import java.util.Collection;
 public class ESSimpleExpression {
 	private String fieldName;       //属性名
     private Object value;           //对应值
-    private Collection<Object> values;           //对应值
+    private Collection<String> values;           //对应值
     private ESCriterion.Operator operator;      //计算符
     private Object from;
     private Object to;
@@ -28,17 +28,17 @@ public class ESSimpleExpression {
         this.operator = operator;
     }
 
-    protected ESSimpleExpression(String fieldName, Collection<Object> values) {
+    protected ESSimpleExpression(String fieldName, Collection<String> values) {
         this.fieldName = fieldName;
         this.values = values;
         this.operator = ESCriterion.Operator.TERMS;
     }
 
-    protected ESSimpleExpression(String fieldName, Object from, Object to) {
+    protected ESSimpleExpression(String fieldName, Object from, Object to, ESCriterion.Operator operator) {
         this.fieldName = fieldName;
         this.from = from;
         this.to = to;
-        this.operator = ESCriterion.Operator.RANGE;
+        this.operator = operator;
     }
 
     public QueryBuilder toBuilder() {
@@ -58,6 +58,9 @@ public class ESSimpleExpression {
                 break;
             case QUERY_STRING:
                 qb = QueryBuilders.queryStringQuery(value.toString());
+                break;
+            case EXSISTS:
+                qb = QueryBuilders.existsQuery(value.toString());
         }
         return qb;
     }

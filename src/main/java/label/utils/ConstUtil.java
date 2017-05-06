@@ -25,6 +25,36 @@ public interface ConstUtil {
 
 	public final String COLUMNFAMILY_DEFAULT = "default";
 
+	public final String STORE_TIME = "storeTime";
+
+	public final int QUERY_SIZE = 100;
+
+	public final String ES_ID = "_id";
+
+	public final String ES = "ES";
+
+	public final String HBASE = "HBASE";
+
+	public final String HBASE_ROOTDIR = "hbase.rootdir";
+
+	public final String HBASE_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
+
+	public final String HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT = "hbase.zookeeper.property.clientPort";
+
+	public final String ES_NODES = "es.nodes";
+
+	public final String ES_PORT = "es.port";
+
+	public final String ES_INDEX_AUTO_CREATE = "es.index.auto.create";
+
+	public final String ES_TRANSPORT_PORT = "es.transport.port";
+
+	public final String CLUSTER_NAME = "cluster.name";
+
+	public final String PROPERTY_YML = "property.yml";
+
+
+
 	public enum DATABASE {
 		HIVE, HBASE, ES
 	}

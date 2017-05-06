@@ -1,5 +1,7 @@
 package label.elasticsearch;
 
+import label.combine.Builders;
+import label.combine.SimpleExpression;
 import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class ESQueryBuilders implements ESCriterion{
      * @param field 字段名
      * @param values 集合值
      */
-    public ESQueryBuilders terms(String field, Collection<Object> values) {
+    public ESQueryBuilders terms(String field, Collection<String> values) {
         list.add(new ESSimpleExpression (field, values).toBuilder());
         return this;
     }
@@ -51,7 +53,7 @@ public class ESQueryBuilders implements ESCriterion{
      * @param to 末尾值
      */
     public ESQueryBuilders range(String field, Object from, Object to) {
-        list.add(new ESSimpleExpression (field, from, to).toBuilder());
+        list.add(new ESSimpleExpression (field, from, to, Operator.RANGE).toBuilder());
         return this;
     }
 
@@ -61,6 +63,15 @@ public class ESQueryBuilders implements ESCriterion{
      */
     public ESQueryBuilders queryString(String queryString) {
         list.add(new ESSimpleExpression (queryString, Operator.QUERY_STRING).toBuilder());
+        return this;
+    }
+
+    /**
+     * 功能描述：非空查询
+     * @param field 校验字段
+     */
+    public ESQueryBuilders exists(String field) {
+        list.add(new ESSimpleExpression(field, Operator.EXSISTS).toBuilder());
         return this;
     }
 

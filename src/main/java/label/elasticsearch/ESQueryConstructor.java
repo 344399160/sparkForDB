@@ -1,5 +1,6 @@
 package label.elasticsearch;
 
+import label.utils.ConstUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -13,9 +14,9 @@ import java.util.List;
  */
 public class ESQueryConstructor {
 
-	private int size = 100;
+	private int size;
 
-	private int from = 0;
+	private int from;
 
 	private String asc;
 
@@ -94,6 +95,9 @@ public class ESQueryConstructor {
 
 
 	public int getSize() {
+		if (size == 0) {
+			size = ConstUtil.QUERY_SIZE;
+		}
 		return size;
 	}
 

@@ -76,18 +76,18 @@ public class BeanUtil {
       * @param combinedObj 被合并对象
       * @param obj 合并对象
       */
-    public static Object combineObject(Object combinedObj, Object obj) throws Exception{
-        Map<String, Object> combinedMap = objectToMap(combinedObj);
-        Map<String, Object> objMap = objectToMap(obj);
-        objMap.forEach((param1, param2) -> {
-            if (combinedMap.containsKey(param1) && (param2 != null)) {
-                //删除旧KEY
-                combinedMap.remove(param1);
-                combinedMap.put(param1, param2);
-            }
-        });
-        return mapToObject(combinedMap, combinedObj.getClass());
-    }
+//    public static Object combineObject(Object combinedObj, Object obj) throws Exception{
+//        Map<String, Object> combinedMap = objectToMap(combinedObj);
+//        Map<String, Object> objMap = objectToMap(obj);
+//        objMap.forEach((param1, param2) -> {
+//            if (combinedMap.containsKey(param1) && (param2 != null)) {
+//                //删除旧KEY
+//                combinedMap.remove(param1);
+//                combinedMap.put(param1, param2);
+//            }
+//        });
+//        return mapToObject(combinedMap, combinedObj.getClass());
+//    }
 
     /**
       * 功能描述：对象合并
@@ -96,17 +96,17 @@ public class BeanUtil {
       * @param combinedObj 被合并对象
       * @param objMap 合并对象
       */
-    public static Object combineObject(Object combinedObj, Map<String, Object> objMap) throws Exception{
-        Map<String, Object> combinedMap = objectToMap(combinedObj);
-        objMap.forEach((param1, param2) -> {
-            if (combinedMap.containsKey(param1) && (param2 != null && StringUtils.isNotEmpty(param2.toString()))) {
-                //删除旧KEY
-                combinedMap.remove(param1);
-                combinedMap.put(param1, param2);
-            }
-        });
-        return mapToObject(combinedMap, combinedObj.getClass());
-    }
+//    public static Object combineObject(Object combinedObj, Map<String, Object> objMap) throws Exception{
+//        Map<String, Object> combinedMap = objectToMap(combinedObj);
+//        objMap.forEach((param1, param2) -> {
+//            if (combinedMap.containsKey(param1) && (param2 != null && StringUtils.isNotEmpty(param2.toString()))) {
+//                //删除旧KEY
+//                combinedMap.remove(param1);
+//                combinedMap.put(param1, param2);
+//            }
+//        });
+//        return mapToObject(combinedMap, combinedObj.getClass());
+//    }
 
     /**
       * 功能描述：对象合并
@@ -115,16 +115,16 @@ public class BeanUtil {
       * @param combinedMap 被合并对象
       * @param objMap 合并对象
       */
-    public static Map<String, Object> combineObject(Map<String, Object> combinedMap, Map<String, Object> objMap) throws Exception{
-        objMap.forEach((param1, param2) -> {
-            if (combinedMap.containsKey(param1) && (param2 != null && StringUtils.isNotEmpty(param2.toString()))) {
-                //删除旧KEY
-                combinedMap.remove(param1);
-                combinedMap.put(param1, param2);
-            }
-        });
-        return combinedMap;
-    }
+//    public static Map<String, Object> combineObject(Map<String, Object> combinedMap, Map<String, Object> objMap) throws Exception{
+//        objMap.forEach((param1, param2) -> {
+//            if (combinedMap.containsKey(param1) && (param2 != null && StringUtils.isNotEmpty(param2.toString()))) {
+//                //删除旧KEY
+//                combinedMap.remove(param1);
+//                combinedMap.put(param1, param2);
+//            }
+//        });
+//        return combinedMap;
+//    }
 
 
 
